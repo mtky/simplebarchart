@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="/Scripts/jquery-2.1.1.js"></script>
+    <script src="/js/graph.js"></script>
+    <link href="/css/graph.css" rel="stylesheet" />
+</head>
+<body>
+    <div>
+        <table id="myTable" data-height="400" data-width="40%" data-border="5px solid #F00">
+            <thead>
+                <tr>
+                    <th>Departman
+                    </th>
+                    <th>Personel (2012)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Muhasebe</td>
+                    <td data-color="#CCF600">320</td>
+                </tr>
+                <tr>
+                    <td>Yazılım</td>
+                    <td data-color="#FF0">390</td>
+                </tr>
+                <tr>
+                    <td>Yönetim</td>
+                    <td data-color="#F60">400</td>
+                </tr>
+                <tr>
+                    <td>Pazarlama</td>
+                    <td data-color="#8CC">450</td>
+                </tr>
+                <tr>
+                    <td>Finans</td>
+                    <td data-color="#CCC">450</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function () {
+            drawGraph('myTable', 1000);
+            //drawMultiColumnGraph('myTable', 1000);
+        })
+
+        function drawMultiColumnGraph(tableId, animationTime) {
+            var $table = document.getElementById(tableId);
+            var $thead = $($table).find('thead');
+            var $tbody = $($table).find('tbody');
+
+            var tableHtml = '';
+
+            //[{ '': [{'25':'#FF0'}, 15, 33] }, { '': [33, 22, 15] }]
+            var json = {};
+
+            var t = 0;
+            var r = 0;
+            var h = 0;
+
+            var sectionCount = $($thead).find('th').length - 1;
+
+            $.each($($tbody).find('tr'), function (i, e) {
+                var n = $(e).find('td').first().html();
+                var p = {};
+                for (var i = 1; i < sectionCount + 1; i++) {
+                    var v = $(e).find('td').eq(i).html();
+                    var c = $(e).find('td').eq(i).attr('data-color');
+                    p[v] = c;
+                }
+                json[n] = p;
+            });
+
+            console.log(JSON.stringify(json));
+            console.log(json);
+
+            for (var key in json) {
+                if (json.hasOwnProperty(key)) {
+                    console.log(key + " -> " + JSON.stringify(json[key]));
+                }
+            };
+
+            tableHtml += '<tbody><tr>';
+
+            var i = 1;
+            for (var k in json) {
+                if (json.hasOwnProperty(k)) {
+                    var f = false;
+                    tableHtml += '<td class="gbody">';
+                    for (var s in json[k]) {
+                        var c = '#CCC'
+                        if (!f)
+                            tableHtml += '<div style="background-color:' + c + '" class="gbar class' + i + '">' + s + '</div>';
+                        else
+                            tableHtml += '<div style="background-color:' + c + ';float:left;margin-left:0px;" class="gbar class' + i + '">' + s + '</div>';
+
+                        i++;
+                        f = true;
+                        t = t + parseInt(s);
+                    }
+                    tableHtml += '</td>';
+                }
+            }
+
+            tableHtml += '</tr><tr>';
+
+            for (var k in json) {
+                tableHtml += '<td class="gobj">' + k + '</td>';
+            }
+
+            tableHtml += '</tr></tbody>';
+
+            $($table).html(tableHtml);
+
+            $(".gbar").animate({ "height": 150 + "px" }, animationTime);
+
+            var i = 1;
+            for (var k in json) {
+                if (json.hasOwnProperty(k)) {
+                    var totals = 0;
+                    var array = [];
+                    var margins = [];
+                    for (var s in json[k]) {
+                        totals += parseInt(s);
+                        array.push(parseInt(s));
+                    }
+
+                    var max = Math.max.apply(Math, array);
+
+                    var index = 0;
+                    for (var s in json[k]) {
+                        margins.push(parseInt(max) - parseInt(s));
+                    }
+                    console.log(margins);
+
+                    for (var s in json[k]) {
+                        r = (s / t);
+                        h = 200 * r;
+                        $(".class" + (index + 1)).animate({ "height": h + "px" }, animationTime);
+                        var m = margins[index];
+                        $(".class" + (index + 1)).css({ "marginTop": m + "px" });
+                        index++;
+                    }
+                }
+            }
+
+            //$.each(values, function (i, v) {
+            //    r = (v / t);
+            //    h = 200 * r;
+            //    $(".class" + (i + 1)).animate({ "height": h + "px" }, animationTime);
+            //    $(".class" + (i + 1)).html(v);
+            //});
+
+        }
+    </script>
+</body>
+</html>
